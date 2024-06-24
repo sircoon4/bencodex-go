@@ -18,7 +18,7 @@ func EncodeValue(val reflect.Value) ([]byte, error) {
 		return encodeString(val), nil
 	case reflect.Slice, reflect.Array:
 		if val.Type().Elem().Kind() == reflect.Uint8 {
-			return encodeByteString(val), nil
+			return encodeBytes(val), nil
 		}
 
 		return encodeList(val)

@@ -15,6 +15,9 @@ func (e *UnsupportedTypeError) Error() string {
 }
 
 func isNil(val reflect.Value) bool {
+	if !val.IsValid() {
+		return true
+	}
 	switch val.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
 		return val.IsNil()

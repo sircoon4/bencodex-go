@@ -28,7 +28,7 @@ func encodeString(val reflect.Value) []byte {
 	return []byte("u" + strconv.Itoa(val.Len()) + ":" + val.String())
 }
 
-func encodeByteString(val reflect.Value) []byte {
+func encodeBytes(val reflect.Value) []byte {
 	if !val.CanAddr() {
 		tmpVal := reflect.New(val.Type())
 		tmpVal.Elem().Set(val)
