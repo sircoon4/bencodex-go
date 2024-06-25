@@ -8,10 +8,11 @@ import (
 
 type UnsupportedTypeError struct {
 	Type reflect.Type
+	Kind reflect.Kind
 }
 
 func (e *UnsupportedTypeError) Error() string {
-	return "unsupported type: " + e.Type.String()
+	return "unsupported type: " + e.Type.String() + " " + e.Kind.String()
 }
 
 func isNil(val reflect.Value) bool {

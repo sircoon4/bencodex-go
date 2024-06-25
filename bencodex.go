@@ -19,7 +19,7 @@ func Encode(val reflect.Value) ([]byte, error) {
 	return encodedValue, nil
 }
 
-func Decode(b []byte) (any, error) {
+func Decode(b []byte) (reflect.Value, error) {
 	fmt.Printf("Decode Result of %s: \n", string(b))
 	decodedValue, err := decode.DecodeValue(&b)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 
 func main() {
 	var b []byte
+	var rv reflect.Value
 	var err error
 
 	b, err = bencodex.Encode(reflect.ValueOf(nil))
@@ -57,6 +58,13 @@ func main() {
 	}
 	b, err = bencodex.Encode(reflect.ValueOf([]int{1, 2, 3}))
 	if err == nil {
+		rv, err = bencodex.Decode(b)
+		if err == nil {
+			bencodex.Encode(rv)
+		}
+	}
+	b, err = bencodex.Encode(reflect.ValueOf([]string{"test", "for", "string"}))
+	if err == nil {
 		bencodex.Decode(b)
 	}
 	b, err = bencodex.Encode(reflect.ValueOf([]any{-1, "we", []byte("byteee")}))
@@ -70,12 +78,18 @@ func main() {
 	}
 	b, err = bencodex.Encode(reflect.ValueOf(map[string]int{"one": 1, "two": 2, "three": 3}))
 	if err == nil {
-		bencodex.Decode(b)
+		rv, err = bencodex.Decode(b)
+		if err == nil {
+			bencodex.Encode(rv)
+		}
 	}
 	byteArrayKey := [3]byte{101, 101, 101}
 	b, err = bencodex.Encode(reflect.ValueOf(map[any]any{"apam": []byte("eggs"), byteArrayKey: "moo", "spam1": []byte("eggs")}))
 	if err == nil {
-		bencodex.Decode(b)
+		rv, err = bencodex.Decode(b)
+		if err == nil {
+			bencodex.Encode(rv)
+		}
 	}
 
 }

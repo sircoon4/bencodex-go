@@ -17,6 +17,8 @@ func EncodeValue(val reflect.Value) ([]byte, error) {
 	case reflect.String:
 		return encodeString(val), nil
 	case reflect.Slice, reflect.Array:
+		t := val.Type().Elem().Kind()
+		_ = t
 		if val.Type().Elem().Kind() == reflect.Uint8 {
 			return encodeBytes(val), nil
 		}
@@ -26,7 +28,9 @@ func EncodeValue(val reflect.Value) ([]byte, error) {
 		return encodeDictionary(val)
 	case reflect.Interface:
 		return EncodeValue(val.Elem())
+	case reflect.Struct:
+		return EncodeValue(val.Interface().(reflect.Value))
 	default:
-		return nil, &UnsupportedTypeError{val.Type()}
+		return nil, &UnsupportedTypeError{val.Type(), val.Kind()}
 	}
 }

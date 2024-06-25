@@ -93,13 +93,13 @@ func decodeList(b *[]byte) (reflect.Value, error) {
 		return reflect.Value{}, err
 	}
 
-	var list []reflect.Value
+	var list []any
 	for (*b)[0] != 'e' {
 		val, err := DecodeValue(b)
 		if err != nil {
 			return reflect.Value{}, err
 		}
-		list = append(list, val)
+		list = append(list, val.Interface())
 	}
 
 	_, err = popByte(b)
@@ -116,7 +116,7 @@ func decodeDictionary(b *[]byte) (reflect.Value, error) {
 		return reflect.Value{}, err
 	}
 
-	dict := make(map[reflect.Value]reflect.Value)
+	dict := make(map[any]any)
 	for (*b)[0] != 'e' {
 		key, err := DecodeValue(b)
 		if err != nil {
@@ -128,7 +128,7 @@ func decodeDictionary(b *[]byte) (reflect.Value, error) {
 			return reflect.Value{}, err
 		}
 
-		dict[key] = val
+		dict[key] = val.Interface()
 	}
 
 	_, err = popByte(b)
