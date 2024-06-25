@@ -10,18 +10,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const encodedDataFilesPath = "spec/testsuite/*.dat"
+const decodedDataFilesPath = "spec/testsuite/*.json"
+const excludedDataFilesPath = "spec/testsuite/*.repr.json"
+
 func TestBencodexEncode(t *testing.T) {
-	testFiles, err := filepath.Glob("testsuite/*.json")
+	testFiles, err := filepath.Glob(decodedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	excluededFiles, err := filepath.Glob("testsuite/*.repr.json")
+	excluededFiles, err := filepath.Glob(excludedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	testFiles = difference(testFiles, excluededFiles)
 
-	testResults, err := filepath.Glob("testsuite/*.dat")
+	testResults, err := filepath.Glob(encodedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,16 +71,16 @@ func TestBencodexEncode(t *testing.T) {
 }
 
 func _TestBencodexDecode(t *testing.T) {
-	testFiles, err := filepath.Glob("testsuite/*.dat")
+	testFiles, err := filepath.Glob(encodedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	testResultFiles, err := filepath.Glob("testsuite/*.json")
+	testResultFiles, err := filepath.Glob(decodedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	excluededResultFiles, err := filepath.Glob("testsuite/*.repr.json")
+	excluededResultFiles, err := filepath.Glob(excludedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
