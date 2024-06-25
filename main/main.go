@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"reflect"
+
 	"github.com/planetarium/bencodex-go"
 )
 
 func main() {
 	var b []byte
-	var rv any
+	var v any
 	var err error
 
 	b, err = bencodex.Encode(nil)
@@ -52,9 +55,9 @@ func main() {
 	}
 	b, err = bencodex.Encode([]int{1, 2, 3})
 	if err == nil {
-		rv, err = bencodex.Decode(b)
+		v, err = bencodex.Decode(b)
 		if err == nil {
-			bencodex.Encode(rv)
+			bencodex.Encode(v)
 		}
 	}
 	b, err = bencodex.Encode([]string{"test", "for", "string"})
@@ -72,17 +75,23 @@ func main() {
 	}
 	b, err = bencodex.Encode(map[string]int{"one": 1, "two": 2, "three": 3})
 	if err == nil {
-		rv, err = bencodex.Decode(b)
+		v, err = bencodex.Decode(b)
 		if err == nil {
-			bencodex.Encode(rv)
+			bencodex.Encode(v)
 		}
 	}
 	byteArrayKey := [3]byte{101, 101, 101}
-	b, err = bencodex.Encode(map[any]any{"apam": []byte("eggs"), byteArrayKey: "moo", "spam1": []byte("eggs")})
+	b, err = bencodex.Encode(map[any]any{"apam": []byte("eggs"), byteArrayKey: "moo", "spam1": []byte("eggsk")})
 	if err == nil {
-		rv, err = bencodex.Decode(b)
+		v, err = bencodex.Decode(b)
+		vm := v.(map[reflect.Value]any)
+		fmt.Println()
+		fmt.Println(bencodex.FindValue(vm, []byte{101, 101, 101}))
+		fmt.Println(bencodex.FindValue(vm, byteArrayKey))
+		fmt.Println(bencodex.FindValue(vm, "apam"))
+		fmt.Println(bencodex.FindValue(vm, reflect.ValueOf("spam1")))
 		if err == nil {
-			bencodex.Encode(rv)
+			bencodex.Encode(v)
 		}
 	}
 }

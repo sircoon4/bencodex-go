@@ -7,6 +7,7 @@ import (
 
 	"github.com/planetarium/bencodex-go/internal/decode"
 	"github.com/planetarium/bencodex-go/internal/encode"
+	"github.com/planetarium/bencodex-go/internal/utils"
 )
 
 func Encode(val any) ([]byte, error) {
@@ -59,4 +60,8 @@ func DecodeFrom(r io.Reader) (any, error) {
 		return nil, err
 	}
 	return decodedValue, err
+}
+
+func FindValue(m map[reflect.Value]any, k any) any {
+	return utils.FindValue(m, k)
 }

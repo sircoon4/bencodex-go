@@ -116,7 +116,7 @@ func decodeDictionary(b *[]byte) (reflect.Value, error) {
 		return reflect.Value{}, err
 	}
 
-	dict := make(map[any]any)
+	dict := make(map[reflect.Value]any)
 	for (*b)[0] != 'e' {
 		key, err := DecodeValue(b)
 		if err != nil {
