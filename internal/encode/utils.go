@@ -35,7 +35,7 @@ func sortEncodedPropertySlice(val [][]byte) [][]byte {
 		} else {
 			iValue := bytes.Split(val[i], []byte(":"))[1]
 			jValue := bytes.Split(val[j], []byte(":"))[1]
-			return bytes.Compare(iValue, jValue) > 0
+			return bytes.Compare(iValue, jValue) < 0
 		}
 	})
 	return val

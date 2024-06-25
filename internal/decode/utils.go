@@ -3,6 +3,7 @@ package decode
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 )
 
 func popByte(b *[]byte) (byte, error) {
@@ -38,4 +39,11 @@ func popBytesUntil(b *[]byte, c byte) ([]byte, error) {
 	*b = (*b)[until+1:]
 
 	return v, nil
+}
+
+func safeInterface(v reflect.Value) any {
+	if !v.IsValid() {
+		return nil
+	}
+	return v.Interface()
 }

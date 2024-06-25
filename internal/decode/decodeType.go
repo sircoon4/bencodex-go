@@ -99,7 +99,7 @@ func decodeList(b *[]byte) (reflect.Value, error) {
 		if err != nil {
 			return reflect.Value{}, err
 		}
-		list = append(list, val.Interface())
+		list = append(list, safeInterface(val))
 	}
 
 	_, err = popByte(b)
@@ -127,8 +127,7 @@ func decodeDictionary(b *[]byte) (reflect.Value, error) {
 		if err != nil {
 			return reflect.Value{}, err
 		}
-
-		dict[key] = val.Interface()
+		dict[key] = safeInterface(val)
 	}
 
 	_, err = popByte(b)
