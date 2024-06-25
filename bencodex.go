@@ -2,6 +2,7 @@ package bencodex
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 
 	"github.com/planetarium/bencodex-go/internal/decode"
@@ -17,6 +18,14 @@ func Encode(val any) ([]byte, error) {
 	}
 	fmt.Println(encodedValue, string(encodedValue))
 	return encodedValue, nil
+}
+
+func EncodeTo(w io.Writer, val any) error {
+	encodedValue, err := Encode(val)
+	if err != nil {
+		return err
+	}
+	return writeToWriter(w, encodedValue)
 }
 
 func Decode(b []byte) (any, error) {
@@ -35,4 +44,19 @@ func Decode(b []byte) (any, error) {
 	}
 	fmt.Println(decodedValue)
 	return decodedValue, nil
+}
+
+func DecodeFrom(r io.Reader) (any, error) {
+	b := make([]byte, 64)
+	err := readFromReader(r, &b)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	decodedValue, err := Decode(b)
+	if err != nil {
+		return nil, err
+	}
+	return decodedValue, err
 }
