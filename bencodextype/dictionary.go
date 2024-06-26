@@ -120,6 +120,10 @@ func (d *Dictionary) ConvertToMap() map[string]any {
 	return m
 }
 
+func (d *Dictionary) String() string {
+	return fmt.Sprintf("%s", *d)
+}
+
 func NewDictionary() *Dictionary {
 	d := make(Dictionary)
 	return &d

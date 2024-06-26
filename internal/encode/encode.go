@@ -30,6 +30,7 @@ func EncodeValue(val reflect.Value) ([]byte, error) {
 	case reflect.Map:
 		return encodeMap(val)
 	case reflect.Interface:
+		//handle elements of []any type
 		return EncodeValue(val.Elem())
 	case reflect.Pointer:
 		_, ok := val.Interface().(*bencodextype.Dictionary)
