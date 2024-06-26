@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/planetarium/bencodex-go"
 	"github.com/planetarium/bencodex-go/bencodextype"
@@ -100,7 +101,15 @@ func main() {
 	if err == nil {
 		rv, err = bencodex.Decode(b)
 		if err == nil {
-			bencodex.Encode(rv)
+			f, _ := os.Create("output1.txt")
+			err := bencodex.EncodeTo(f, rv)
+			f.Close()
+
+			if err == nil {
+				f, _ = os.Open("output1.txt")
+				bencodex.DecodeFrom(f)
+				f.Close()
+			}
 		}
 	}
 	fmt.Println()
@@ -110,7 +119,15 @@ func main() {
 	if err == nil {
 		rv, err = bencodex.Decode(b)
 		if err == nil {
-			bencodex.Encode(rv)
+			f, _ := os.Create("output2.txt")
+			err := bencodex.EncodeTo(f, rv)
+			f.Close()
+
+			if err == nil {
+				f, _ = os.Open("output2.txt")
+				bencodex.DecodeFrom(f)
+				f.Close()
+			}
 		}
 	}
 }
