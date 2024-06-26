@@ -38,4 +38,6 @@ But you can use the `map[string]any` type for `bencodex.Encode` as well as the `
 Example
 -------
 
-See [Example]
+See [Examples]
+
+[Examples]: https://github.com/sircoon4/bencodex-go-rv/tree/main/examples
