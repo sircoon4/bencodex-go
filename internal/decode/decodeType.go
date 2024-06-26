@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"github.com/planetarium/bencodex-go/bencodextype"
 )
 
 func decodeNil(b *[]byte) (reflect.Value, error) {
@@ -116,7 +118,7 @@ func decodeDictionary(b *[]byte) (reflect.Value, error) {
 		return reflect.Value{}, err
 	}
 
-	dict := make(map[any]any)
+	dict := bencodextype.NewDictionary()
 	for (*b)[0] != 'e' {
 		key, err := DecodeValue(b)
 		if err != nil {
@@ -127,7 +129,7 @@ func decodeDictionary(b *[]byte) (reflect.Value, error) {
 		if err != nil {
 			return reflect.Value{}, err
 		}
-		dict[key] = safeInterface(val)
+		dict.Set(safeInterface(key), safeInterface(val))
 	}
 
 	_, err = popByte(b)

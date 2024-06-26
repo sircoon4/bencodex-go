@@ -1,6 +1,10 @@
 package encode
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/planetarium/bencodex-go/bencodextype"
+)
 
 func EncodeValue(val reflect.Value) ([]byte, error) {
 	if isNil(val) {
@@ -17,19 +21,21 @@ func EncodeValue(val reflect.Value) ([]byte, error) {
 	case reflect.String:
 		return encodeString(val), nil
 	case reflect.Slice, reflect.Array:
-		t := val.Type().Elem().Kind()
-		_ = t
 		if val.Type().Elem().Kind() == reflect.Uint8 {
 			return encodeBytes(val), nil
 		}
 
 		return encodeList(val)
 	case reflect.Map:
-		return encodeDictionary(val)
+		return encodeMap(val)
 	case reflect.Interface:
 		return EncodeValue(val.Elem())
-	case reflect.Struct:
-		return EncodeValue(val.Interface().(reflect.Value))
+	case reflect.Pointer:
+		_, ok := val.Interface().(*bencodextype.Dictionary)
+		if ok {
+			return encodeDictionary(val)
+		}
+		return nil, &UnsupportedTypeError{val.Type(), val.Kind()}
 	default:
 		return nil, &UnsupportedTypeError{val.Type(), val.Kind()}
 	}
