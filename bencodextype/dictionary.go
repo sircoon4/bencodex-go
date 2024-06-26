@@ -90,6 +90,12 @@ func (d *Dictionary) CanConvertToMap() bool {
 	for key := range *d {
 		switch key[:2] {
 		case "s:":
+			_, ok := (*d)[key].(*Dictionary)
+			if ok {
+				if !(*(*d)[key].(*Dictionary)).CanConvertToMap() {
+					return false
+				}
+			}
 			continue
 		default:
 			return false
@@ -105,6 +111,10 @@ func (d *Dictionary) ConvertToMap() map[string]any {
 	}
 	m := make(map[string]any)
 	for key, value := range *d {
+		_, ok := value.(*Dictionary)
+		if ok {
+			value = value.(*Dictionary).ConvertToMap()
+		}
 		m[key[2:]] = value
 	}
 	return m
