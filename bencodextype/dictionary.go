@@ -85,6 +85,29 @@ func (d *Dictionary) Length() int {
 	return len(*d)
 }
 
+func (d *Dictionary) CanConvertToMap() bool {
+	for key := range *d {
+		switch key[:2] {
+		case "s:":
+			continue
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func (d *Dictionary) ConvertToMap() map[string]any {
+	if !d.CanConvertToMap() {
+		panic("dictionary cannot be converted to map")
+	}
+	m := make(map[string]any)
+	for key, value := range *d {
+		m[key[2:]] = value
+	}
+	return m
+}
+
 func NewDictionary() *Dictionary {
 	d := make(Dictionary)
 	return &d
