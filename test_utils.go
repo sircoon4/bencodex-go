@@ -10,6 +10,27 @@ import (
 	"github.com/planetarium/bencodex-go/bencodextype"
 )
 
+// remove slice2 from slice1
+func difference(slice1 []string, slice2 []string) []string {
+	var diff []string
+
+	for _, s1 := range slice1 {
+		found := false
+		for _, s2 := range slice2 {
+			if s1 == s2 {
+				found = true
+				break
+			}
+		}
+		// if string is not foundec, add it to return slice
+		if !found {
+			diff = append(diff, s1)
+		}
+	}
+
+	return diff
+}
+
 func parseJsonData(jsonData map[string]any) (any, error) {
 	switch jsonData["type"] {
 	case "null":
@@ -57,6 +78,7 @@ func parseJsonData(jsonData map[string]any) (any, error) {
 		}
 		return list, nil
 	case "dictionary":
+		// if jsonData is dictionary type, return bencodex dictionary type
 		dict := bencodextype.NewDictionary()
 		if jsonData["pairs"] == nil {
 			return nil, fmt.Errorf("invalid json data")
@@ -84,6 +106,7 @@ func parseJsonData(jsonData map[string]any) (any, error) {
 	}
 }
 
+// customizedAssertEqual is a function that compares the real values of the result and decoded data.
 func customizedAssertEqual(t *testing.T, result any, decoded any) {
 	dDict, ok := decoded.(*bencodextype.Dictionary)
 	if ok {

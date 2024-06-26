@@ -85,6 +85,7 @@ func (d *Dictionary) Length() int {
 	return len(*d)
 }
 
+// Dictionary can be converted to a map if all keys are strings
 func (d *Dictionary) CanConvertToMap() bool {
 	for key := range *d {
 		switch key[:2] {
@@ -97,6 +98,7 @@ func (d *Dictionary) CanConvertToMap() bool {
 	return true
 }
 
+// Use CanConvertToMap() to check if the dictionary can be converted to a map
 func (d *Dictionary) ConvertToMap() map[string]any {
 	if !d.CanConvertToMap() {
 		panic("dictionary cannot be converted to map")

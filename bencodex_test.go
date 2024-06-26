@@ -23,6 +23,7 @@ func TestBencodexEncode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Exclude the files that are not for encoding
 	testFiles = difference(testFiles, excluededFiles)
 
 	testResults, err := filepath.Glob(encodedDataFilesPath)
@@ -84,6 +85,7 @@ func TestBencodexDecode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Exclude the files that are not for decoding results
 	testResults := difference(testResultFiles, excluededResultFiles)
 
 	for i, file := range testFiles {
