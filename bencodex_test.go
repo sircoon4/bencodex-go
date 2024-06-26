@@ -70,7 +70,7 @@ func TestBencodexEncode(t *testing.T) {
 	}
 }
 
-func _TestBencodexDecode(t *testing.T) {
+func TestBencodexDecode(t *testing.T) {
 	testFiles, err := filepath.Glob(encodedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
@@ -88,6 +88,9 @@ func _TestBencodexDecode(t *testing.T) {
 
 	for i, file := range testFiles {
 		t.Run(filepath.Base(file), func(t *testing.T) {
+			fmt.Println()
+			fmt.Println("Test File:", file)
+
 			// Read the test file
 			data, err := os.ReadFile(file)
 			if err != nil {
@@ -118,7 +121,7 @@ func _TestBencodexDecode(t *testing.T) {
 			}
 
 			// Compare the original data with the decoded data
-			assert.Equal(t, result, decoded)
+			customizedAssertEqual(t, result, decoded)
 		})
 	}
 }
