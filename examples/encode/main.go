@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/planetarium/bencodex-go"
 	"github.com/planetarium/bencodex-go/bencodextype"
@@ -53,6 +54,16 @@ func main() {
 	}
 
 	val = -1725
+	b, err = bencodex.Encode(val)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("Encode Result of %v: \n", val)
+		fmt.Println(b, string(b))
+		fmt.Println()
+	}
+
+	val = new(big.Int).SetInt64(-1725)
 	b, err = bencodex.Encode(val)
 	if err != nil {
 		fmt.Println(err)

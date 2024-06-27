@@ -5,5 +5,5 @@ func main() {
 
 	//serializedpayloadElementExample()
 
-	blockTransactionParseExample()
+	blockTransactionsParseExample()
 }

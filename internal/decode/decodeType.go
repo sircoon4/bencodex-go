@@ -2,6 +2,7 @@ package decode
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 	"strconv"
 
@@ -42,10 +43,18 @@ func decodeInteger(b *[]byte) (reflect.Value, error) {
 		return reflect.Value{}, err
 	}
 
-	vInt, err := strconv.ParseInt(string(v), 10, 64)
+	vInt, err := strconv.Atoi(string(v))
 	if err != nil {
-		return reflect.Value{}, err
+		// If the value is too large to fit in an int, it is stored as a big.Int
+		vBigInt := new(big.Int)
+		vBigInt, ok := vBigInt.SetString(string(v), 10)
+		if !ok {
+			return reflect.Value{}, err
+		} else {
+			return reflect.ValueOf(vBigInt), nil
+		}
 	}
+
 	return reflect.ValueOf(vInt), nil
 }
 

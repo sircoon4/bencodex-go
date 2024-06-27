@@ -3,6 +3,7 @@ package bencodex
 import (
 	"encoding/base64"
 	"fmt"
+	"math/big"
 	"reflect"
 	"strconv"
 	"testing"
@@ -44,11 +45,18 @@ func parseJsonData(jsonData map[string]any) (any, error) {
 		if jsonData["decimal"] == nil {
 			return nil, fmt.Errorf("invalid json data")
 		}
-		data, error := strconv.ParseInt(jsonData["decimal"].(string), 10, 64)
+		data, error := strconv.Atoi(jsonData["decimal"].(string))
 		if error != nil {
-			return nil, error
+			// If the value is too large to fit in an int, it is stored as a big.Int
+			bigInt := new(big.Int)
+			bigInt, ok := bigInt.SetString(jsonData["decimal"].(string), 10)
+			if !ok {
+				return nil, error
+			} else {
+				return bigInt, nil
+			}
 		}
-		return int64(data), nil
+		return data, nil
 	case "binary":
 		if jsonData["base64"] == nil {
 			return nil, fmt.Errorf("invalid json data")
@@ -108,6 +116,7 @@ func parseJsonData(jsonData map[string]any) (any, error) {
 
 // customizedAssertEqual is a function that compares the real values of the result and decoded data.
 func customizedAssertEqual(t *testing.T, result any, decoded any) {
+	// If the decoded data is a dictionary type, compare the values of the result and decoded data.
 	dDict, ok := decoded.(*bencodextype.Dictionary)
 	if ok {
 		rDict, ok := result.(*bencodextype.Dictionary)
@@ -125,25 +134,38 @@ func customizedAssertEqual(t *testing.T, result any, decoded any) {
 			}
 		}
 	} else {
-		rvr := reflect.ValueOf(result)
-		rvd := reflect.ValueOf(decoded)
-		if rvr.Kind() == rvd.Kind() {
-			switch rvd.Kind() {
-			case reflect.Slice:
-				if rvr.Len() == rvd.Len() {
-					for i := 0; i < rvd.Len(); i++ {
-						customizedAssertEqual(t, rvr.Index(i).Interface(), rvd.Index(i).Interface())
-					}
-				} else {
-					t.Fatalf("result and decoded are not equal")
-				}
-			default:
-				if !reflect.DeepEqual(result, decoded) {
-					t.Fatalf("result and decoded are not equal")
-				}
+		// If the decoded data is a big.Int type, compare the values of the result and decoded data.
+		dBigInt, ok := decoded.(*big.Int)
+		if ok {
+			rBigInt, ok := result.(*big.Int)
+			if !ok {
+				t.Fatalf("result and decoded are not equal")
+			}
+			if dBigInt.Cmp(rBigInt) != 0 {
+				t.Fatalf("result and decoded are not equal")
 			}
 		} else {
-			t.Fatalf("result and decoded are not equal")
+			// If the decoded data is not a dictionary or big.Int type, compare the values of the result and decoded data.
+			rvr := reflect.ValueOf(result)
+			rvd := reflect.ValueOf(decoded)
+			if rvr.Kind() == rvd.Kind() {
+				switch rvd.Kind() {
+				case reflect.Slice:
+					if rvr.Len() == rvd.Len() {
+						for i := 0; i < rvd.Len(); i++ {
+							customizedAssertEqual(t, rvr.Index(i).Interface(), rvd.Index(i).Interface())
+						}
+					} else {
+						t.Fatalf("result and decoded are not equal")
+					}
+				default:
+					if !reflect.DeepEqual(result, decoded) {
+						t.Fatalf("result and decoded are not equal")
+					}
+				}
+			} else {
+				t.Fatalf("result and decoded are not equal")
+			}
 		}
 	}
 }

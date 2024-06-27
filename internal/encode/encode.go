@@ -1,6 +1,7 @@
 package encode
 
 import (
+	"math/big"
 	"reflect"
 
 	"github.com/planetarium/bencodex-go/bencodextype"
@@ -36,6 +37,10 @@ func EncodeValue(val reflect.Value) ([]byte, error) {
 		_, ok := val.Interface().(*bencodextype.Dictionary)
 		if ok {
 			return encodeDictionary(val)
+		}
+		_, ok = val.Interface().(*big.Int)
+		if ok {
+			return encodeBigInteger(val), nil
 		}
 		return nil, &UnsupportedTypeError{val.Type(), val.Kind()}
 	default:

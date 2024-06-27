@@ -1,6 +1,7 @@
 package encode
 
 import (
+	"math/big"
 	"reflect"
 	"strconv"
 
@@ -20,6 +21,11 @@ func encodeBool(val reflect.Value) []byte {
 
 func encodeInteger(val reflect.Value) []byte {
 	return []byte("i" + strconv.FormatInt(val.Int(), 10) + "e")
+}
+
+func encodeBigInteger(val reflect.Value) []byte {
+	vInt := val.Interface().(*big.Int)
+	return []byte("i" + vInt.String() + "e")
 }
 
 func encodeUnsignedInteger(val reflect.Value) []byte {
