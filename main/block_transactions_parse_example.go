@@ -11,29 +11,9 @@ import (
 	"github.com/planetarium/bencodex-go"
 )
 
-type Response struct {
-	Data Data `json:"data"`
-}
-
-type Data struct {
-	BlockQuery BlockQuery `json:"blockQuery"`
-}
-
-type BlockQuery struct {
-	Blocks []Block `json:"blocks"`
-}
-
-type Block struct {
-	Transactions []Transaction `json:"transactions"`
-}
-
-type Transaction struct {
-	SerializedPayload string `json:"serializedPayload"`
-}
-
 // Parse the serialized payload of a block transaction from the GraphQL query response
 // Get response from https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer
-func blockTransactionParseExample() {
+func blockTransactionsParseExample() {
 	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
 
 	// Make GraphQL query request
@@ -71,9 +51,6 @@ func blockTransactionParseExample() {
 		return
 	}
 
-	// Print the response body
-	fmt.Println(string(body))
-
 	// Unmarshal the response body
 	var response Response
 	err = json.Unmarshal(body, &response)
@@ -81,6 +58,10 @@ func blockTransactionParseExample() {
 		fmt.Println("Error unmarshalling response body:", err)
 		return
 	}
+
+	// Print the response body
+	fmt.Printf("%#v\n", response)
+	fmt.Println()
 
 	var serializedPayloadList []any
 	for _, transaction := range response.Data.BlockQuery.Blocks[0].Transactions {
