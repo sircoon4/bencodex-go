@@ -271,59 +271,61 @@ func MarshalYaml(data any) ([]byte, error) {
 	return out, nil
 }
 
-func BencodexValueEqual(result any, decoded any) error {
+func BencodexValueEqual(decoded1 any, decoded2 any) bool {
+	isEqual := true
+
 	// If the decoded data is a dictionary type, compare the values of the result and decoded data.
-	dDict, ok := decoded.(*bencodextype.Dictionary)
+	d2Dict, ok := decoded2.(*bencodextype.Dictionary)
 	if ok {
-		rDict, ok := result.(*bencodextype.Dictionary)
+		d1Dict, ok := decoded1.(*bencodextype.Dictionary)
 		if !ok {
-			return fmt.Errorf("result and decoded are not equal")
+			isEqual = false
 		}
-		if dDict.Length() != rDict.Length() {
-			return fmt.Errorf("result and decoded are not equal")
+		if d2Dict.Length() != d1Dict.Length() {
+			isEqual = false
 		}
-		for _, key := range dDict.Keys() {
-			if rDict.Get(key) == nil {
-				return fmt.Errorf("result and decoded are not equal")
+		for _, key := range d2Dict.Keys() {
+			if d1Dict.Get(key) == nil {
+				isEqual = false
 			} else {
-				BencodexValueEqual(rDict.Get(key), dDict.Get(key))
+				isEqual = BencodexValueEqual(d1Dict.Get(key), d2Dict.Get(key))
 			}
 		}
 	} else {
 		// If the decoded data is a big.Int type, compare the values of the result and decoded data.
-		dBigInt, ok := decoded.(*big.Int)
+		d2BigInt, ok := decoded2.(*big.Int)
 		if ok {
-			rBigInt, ok := result.(*big.Int)
+			d1BigInt, ok := decoded1.(*big.Int)
 			if !ok {
-				return fmt.Errorf("result and decoded are not equal")
+				isEqual = false
 			}
-			if dBigInt.Cmp(rBigInt) != 0 {
-				return fmt.Errorf("result and decoded are not equal")
+			if d2BigInt.Cmp(d1BigInt) != 0 {
+				isEqual = false
 			}
 		} else {
 			// If the decoded data is not a dictionary or big.Int type, compare the values of the result and decoded data.
-			rvr := reflect.ValueOf(result)
-			rvd := reflect.ValueOf(decoded)
-			if rvr.Kind() == rvd.Kind() {
-				switch rvd.Kind() {
+			rvd1 := reflect.ValueOf(decoded1)
+			rvd2 := reflect.ValueOf(decoded2)
+			if rvd1.Kind() == rvd2.Kind() {
+				switch rvd2.Kind() {
 				case reflect.Slice:
-					if rvr.Len() == rvd.Len() {
-						for i := 0; i < rvd.Len(); i++ {
-							BencodexValueEqual(rvr.Index(i).Interface(), rvd.Index(i).Interface())
+					if rvd1.Len() == rvd2.Len() {
+						for i := 0; i < rvd2.Len(); i++ {
+							isEqual = BencodexValueEqual(rvd1.Index(i).Interface(), rvd2.Index(i).Interface())
 						}
 					} else {
-						return fmt.Errorf("result and decoded are not equal")
+						isEqual = false
 					}
 				default:
-					if !reflect.DeepEqual(result, decoded) {
-						return fmt.Errorf("result and decoded are not equal")
+					if !reflect.DeepEqual(decoded1, decoded2) {
+						isEqual = false
 					}
 				}
 			} else {
-				return fmt.Errorf("result and decoded are not equal")
+				isEqual = false
 			}
 		}
 	}
 
-	return nil
+	return isEqual
 }
