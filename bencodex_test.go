@@ -49,7 +49,7 @@ func TestBencodexEncode(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			data, err := util.ParseBencodexMapData(preData)
+			data, err := util.ParseBencodexJasonMapData(preData)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -118,7 +118,7 @@ func TestBencodexDecode(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			result, err := util.ParseBencodexMapData(preData)
+			result, err := util.ParseBencodexJasonMapData(preData)
 			if err != nil {
 				t.Fatal(err)
 			}

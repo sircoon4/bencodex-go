@@ -16,10 +16,10 @@ import (
 
 // Parse the serialized payload of a block transaction from the GraphQL query response
 // Get response from https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer
-func blockTransactionsParseExample() {
+func blockTransactionsToJsonExample() {
 	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
 	const filePath = "bencodex_json_datas/bencodex_json_data_%d.json"
-	const filePathForGlob = "bencodex_json_datas/bencodex_json_data_%d.json"
+	const filePathForGlob = "bencodex_json_datas/bencodex_json_data_*.json"
 
 	// Make GraphQL query request
 	query := `{
@@ -104,21 +104,13 @@ func blockTransactionsParseExample() {
 	for i, serializedPayload := range serializedPayloadList {
 		fmt.Printf("Serialized Payload %d\n:%v\n\n", i, serializedPayload)
 
-		mapData, err := util.ConvertToBencodexMapData(serializedPayload)
+		out, err := util.MarshalJson(serializedPayload)
 		if err != nil {
-			fmt.Println("Error converting to Bencodex map data:", err)
+			fmt.Println("Error marshalling JSON:", err)
 			return
 		}
 
-		fmt.Printf("Bencodex Map Data %d:\n%v\n\n", i, mapData)
-
-		jsonData, err := json.MarshalIndent(mapData, "", "  ")
-		if err != nil {
-			fmt.Println("Error marshalling Bencodex map data:", err)
-			return
-		}
-
-		err = os.WriteFile(fmt.Sprintf(filePath, i), jsonData, 0644)
+		err = os.WriteFile(fmt.Sprintf(filePath, i), out, 0644)
 		if err != nil {
 			fmt.Println("Error writing Bencodex json data:", err)
 			return
@@ -149,7 +141,7 @@ func blockTransactionsParseExample() {
 		if err != nil {
 			fmt.Printf("Error unmarshalling JSON data: %v", err)
 		}
-		data, err := util.ParseBencodexMapData(preData)
+		data, err := util.ParseBencodexJasonMapData(preData)
 		if err != nil {
 			fmt.Printf("Error parsing Bencodex map data: %v", err)
 		}

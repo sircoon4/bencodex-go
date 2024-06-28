@@ -1,3 +1,4 @@
 *.txt
 /.vscode
 main/bencodex_json_datas/*.json
+main/bencodex_yaml_datas/*.yaml
