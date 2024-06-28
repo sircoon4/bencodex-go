@@ -18,6 +18,8 @@ import (
 // Get response from https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer
 func blockTransactionsParseExample() {
 	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
+	const filePath = "bencodex_json_datas/bencodex_json_data_%d.json"
+	const filePathForGlob = "bencodex_json_datas/bencodex_json_data_%d.json"
 
 	// Make GraphQL query request
 	query := `{
@@ -86,31 +88,7 @@ func blockTransactionsParseExample() {
 		serializedPayloadList = append(serializedPayloadList, value)
 	}
 
-	files, err := filepath.Glob("bencodex_map_data_*.json")
-	if err != nil {
-		fmt.Println("Error getting files:", err)
-		return
-	}
-	for _, file := range files {
-		err := os.Remove(file)
-		if err != nil {
-			fmt.Println("Error deleting file:", err)
-			return
-		}
-	}
-	files, err = filepath.Glob("bencodex_encoded_*.dat")
-	if err != nil {
-		fmt.Println("Error getting files:", err)
-		return
-	}
-	for _, file := range files {
-		err := os.Remove(file)
-		if err != nil {
-			fmt.Println("Error deleting file:", err)
-			return
-		}
-	}
-	files, err = filepath.Glob("bencodex_serializedPayloadEncoded_*.dat")
+	files, err := filepath.Glob(filePathForGlob)
 	if err != nil {
 		fmt.Println("Error getting files:", err)
 		return
@@ -140,21 +118,21 @@ func blockTransactionsParseExample() {
 			return
 		}
 
-		err = os.WriteFile(fmt.Sprintf("bencodex_map_data_%d.json", i), jsonData, 0644)
+		err = os.WriteFile(fmt.Sprintf(filePath, i), jsonData, 0644)
 		if err != nil {
-			fmt.Println("Error writing Bencodex map data:", err)
+			fmt.Println("Error writing Bencodex json data:", err)
 			return
 		}
 	}
 
-	files, err = filepath.Glob("bencodex_map_data_*.json")
+	files, err = filepath.Glob(filePathForGlob)
 	if err != nil {
 		fmt.Println("Error getting files:", err)
 		return
 	}
 	for _, file := range files {
 		i := 0
-		_, err := fmt.Sscanf(file, "bencodex_map_data_%d.json", &i)
+		_, err := fmt.Sscanf(file, filePath, &i)
 		if err != nil {
 			fmt.Println("Error extracting number from file name:", err)
 			return
