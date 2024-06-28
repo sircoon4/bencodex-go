@@ -7,7 +7,5 @@ func main() {
 
 	blockTransactionsToJsonExample()
 
-	//bencodexYamlParseExample()
-
 	blockTransactionsToYamlExample()
 }
