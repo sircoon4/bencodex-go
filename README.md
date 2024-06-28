@@ -17,6 +17,8 @@ It currently provides only the most basic encoder and decoder.  See also these m
  -  `bencodex.Decode(b []byte) (any, error)`
  -  `bencodex.DecodeFrom(r io.Reader) (any, error)`
 
+If an integer is too large for decoding with `int` type, it is decoded to `math/big.Int` type. And `math/big.Int` is also available for encoding
+
 The result of decoding the encoded dictionary is returned to the internally defined type, `*bencodextype.Dictionary`.
 
 But you can use the `map[string]any` type for `bencodex.Encode` as well as the `*bencodextype.Dictionary` type.
