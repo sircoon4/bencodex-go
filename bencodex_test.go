@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/planetarium/bencodex-go/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,13 +43,13 @@ func TestBencodexEncode(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Decode the YAML data
+			// Decode the Json data
 			var preData map[string]any
 			err = json.Unmarshal(jsonData, &preData)
 			if err != nil {
 				t.Fatal(err)
 			}
-			data, err := parseJsonData(preData)
+			data, err := util.ParseBencodexMapData(preData)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -111,13 +112,13 @@ func TestBencodexDecode(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Decode the YAML data
+			// Decode the Json data
 			var preData map[string]any
 			err = json.Unmarshal(jsonData, &preData)
 			if err != nil {
 				t.Fatal(err)
 			}
-			result, err := parseJsonData(preData)
+			result, err := util.ParseBencodexMapData(preData)
 			if err != nil {
 				t.Fatal(err)
 			}

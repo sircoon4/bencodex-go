@@ -1,11 +1,8 @@
 package bencodex
 
 import (
-	"encoding/base64"
-	"fmt"
 	"math/big"
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/planetarium/bencodex-go/bencodextype"
@@ -30,88 +27,6 @@ func difference(slice1 []string, slice2 []string) []string {
 	}
 
 	return diff
-}
-
-func parseJsonData(jsonData map[string]any) (any, error) {
-	switch jsonData["type"] {
-	case "null":
-		return nil, nil
-	case "boolean":
-		if jsonData["value"] == nil {
-			return nil, fmt.Errorf("invalid json data")
-		}
-		return jsonData["value"].(bool), nil
-	case "integer":
-		if jsonData["decimal"] == nil {
-			return nil, fmt.Errorf("invalid json data")
-		}
-		data, error := strconv.Atoi(jsonData["decimal"].(string))
-		if error != nil {
-			// If the value is too large to fit in an int, it is stored as a big.Int
-			bigInt := new(big.Int)
-			bigInt, ok := bigInt.SetString(jsonData["decimal"].(string), 10)
-			if !ok {
-				return nil, error
-			} else {
-				return bigInt, nil
-			}
-		}
-		return data, nil
-	case "binary":
-		if jsonData["base64"] == nil {
-			return nil, fmt.Errorf("invalid json data")
-		}
-		data, err := base64.StdEncoding.DecodeString(jsonData["base64"].(string))
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	case "text":
-		if jsonData["value"] == nil {
-			return nil, fmt.Errorf("invalid json data")
-		}
-		return jsonData["value"].(string), nil
-	case "list":
-		list := make([]any, 0)
-		if jsonData["values"] == nil {
-			return nil, fmt.Errorf("invalid json data")
-		}
-		for _, preItem := range jsonData["values"].([]any) {
-			item := preItem.(map[string]any)
-			val, err := parseJsonData(item)
-			if err != nil {
-				return nil, err
-			}
-			list = append(list, val)
-		}
-		return list, nil
-	case "dictionary":
-		// if jsonData is dictionary type, return bencodex dictionary type
-		dict := bencodextype.NewDictionary()
-		if jsonData["pairs"] == nil {
-			return nil, fmt.Errorf("invalid json data")
-		}
-		for _, prePair := range jsonData["pairs"].([]any) {
-			pair := prePair.(map[string]any)
-			if pair["key"] == nil || pair["value"] == nil {
-				return nil, fmt.Errorf("invalid json data")
-			}
-			keyData, err := parseJsonData(pair["key"].(map[string]any))
-			if err != nil {
-				return nil, err
-			}
-			key := keyData
-
-			valData, err := parseJsonData(pair["value"].(map[string]any))
-			if err != nil {
-				return nil, err
-			}
-			dict.Set(key, valData)
-		}
-		return dict, nil
-	default:
-		return nil, fmt.Errorf("invalid json data")
-	}
 }
 
 // customizedAssertEqual is a function that compares the real values of the result and decoded data.

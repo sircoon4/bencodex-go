@@ -1,6 +1,9 @@
 package bencodextype
 
-import "fmt"
+import (
+	"encoding/base64"
+	"fmt"
+)
 
 type Dictionary map[string]any
 
@@ -121,7 +124,19 @@ func (d *Dictionary) ConvertToMap() map[string]any {
 }
 
 func (d *Dictionary) String() string {
-	return fmt.Sprintf("%s", *d)
+	str := "dictionary { "
+	for key, value := range *d {
+		switch key[:2] {
+		case "s:":
+			str += fmt.Sprintf("%s: %v, ", key, value)
+		case "b:":
+			str += fmt.Sprintf("d:base64(%s): %v, ", base64.StdEncoding.EncodeToString([]byte(key[2:])), value)
+		default:
+			panic("dictionary contains invalid key")
+		}
+	}
+	str = str[:len(str)-2] + " }"
+	return str
 }
 
 func NewDictionary() *Dictionary {

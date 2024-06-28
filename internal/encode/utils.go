@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"reflect"
 	"sort"
+	"strconv"
 )
 
 type UnsupportedTypeError struct {
@@ -38,10 +39,34 @@ func sortEncodedPropertySlice(val [][]byte) [][]byte {
 		} else if val[i][0] < val[j][0] {
 			return true
 		} else {
-			iValue := bytes.Split(val[i], []byte(":"))[1]
-			jValue := bytes.Split(val[j], []byte(":"))[1]
-			return bytes.Compare(iValue, jValue) < 0
+			iValue := getKeyFromEncodedMapPairData(val[i])
+			jValue := getKeyFromEncodedMapPairData(val[j])
+			cr := bytes.Compare(iValue, jValue)
+			if cr == 0 {
+				return len(iValue) < len(jValue)
+			}
+			return cr < 0
 		}
 	})
 	return val
+}
+
+func getKeyFromEncodedMapPairData(data []byte) []byte {
+	indicator := bytes.Split(data, []byte(":"))[0]
+	preKey := bytes.Split(data, []byte(":"))[1]
+	var dlen int
+	var err error
+	switch indicator[0] {
+	case 'u':
+		dlen, err = strconv.Atoi(string(indicator[1:]))
+		if err != nil {
+			panic(err)
+		}
+	default:
+		dlen, err = strconv.Atoi(string(indicator))
+		if err != nil {
+			panic(err)
+		}
+	}
+	return preKey[:dlen]
 }
