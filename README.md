@@ -23,7 +23,7 @@ The result of decoding the encoded dictionary is returned to the internally defi
 
 But you can use the `map[string]any` type for `bencodex.Encode` as well as the `*bencodextype.Dictionary` type.
 
-- `type Dictionary`
+- `type bencodextype.Dictionary`
   - `func (d *Dictionary) Set(key any, value any)`
   - `func (d *Dictionary) Get(key any) any`
   - `func (d *Dictionary) Delete(key any)`
@@ -38,8 +38,8 @@ But you can use the `map[string]any` type for `bencodex.Encode` as well as the `
 
 It provides fundamental marshaling to Json and Yaml data
 
-- `func MarshalJson(data any) ([]byte, error)`
-- `func MarshalYaml(data any) ([]byte, error)`
+- `func util.MarshalJson(data any) ([]byte, error)`
+- `func util.MarshalYaml(data any) ([]byte, error)`
 
 Json data format looks like [this]
 
