@@ -14,11 +14,14 @@ import (
 	"github.com/planetarium/bencodex-go/util"
 )
 
-func blockTransactionsToYamlExample() {
+func main() {
 	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
-	const dirPath = "bencodex_yaml_datas"
-	const filePath = "bencodex_yaml_datas/bencodex_yaml_data_%d.yaml"
-	const filePathForGlob = "bencodex_yaml_datas/bencodex_yaml_data_*.yaml"
+	const jsonDirPath = "bencodex_json_datas"
+	const jsonFilePath = "bencodex_json_datas/bencodex_json_data_%d.json"
+	const jsonFilePathForGlob = "bencodex_json_datas/bencodex_json_data_%d.json"
+	const yamlDirPath = "bencodex_yaml_datas"
+	const yamlFilePath = "bencodex_yaml_datas/bencodex_yaml_data_%d.yaml"
+	const yamlFilePathForGlob = "bencodex_yaml_datas/bencodex_yaml_data_*.yaml"
 
 	// Make GraphQL query request
 	query := `{
@@ -63,10 +66,7 @@ func blockTransactionsToYamlExample() {
 		return
 	}
 
-	// Print the response body
-	fmt.Printf("%#v\n", response)
-	fmt.Println()
-
+	// Decode base64 encoded serialized payload
 	var serializedPayloadEncodedList [][]byte
 	for _, transaction := range response.Data.BlockQuery.Blocks[0].Transactions {
 		serializedPayloadEncoded, err := base64.StdEncoding.DecodeString(transaction.SerializedPayload)
@@ -77,6 +77,7 @@ func blockTransactionsToYamlExample() {
 		serializedPayloadEncodedList = append(serializedPayloadEncodedList, serializedPayloadEncoded)
 	}
 
+	// Dcode bencodex encoded serialized payload
 	var serializedPayloadList []any
 	for _, serializedPayloadEncoded := range serializedPayloadEncodedList {
 		value, err := bencodex.Decode(serializedPayloadEncoded)
@@ -87,11 +88,18 @@ func blockTransactionsToYamlExample() {
 		serializedPayloadList = append(serializedPayloadList, value)
 	}
 
-	files, err := filepath.Glob(filePathForGlob)
+	// Delete existing files
+	files, err := filepath.Glob(jsonFilePathForGlob)
 	if err != nil {
 		fmt.Println("Error getting files:", err)
 		return
 	}
+	yamlFiles, err := filepath.Glob(yamlFilePathForGlob)
+	if err != nil {
+		fmt.Println("Error getting files:", err)
+		return
+	}
+	files = append(files, yamlFiles...)
 	for _, file := range files {
 		err := os.Remove(file)
 		if err != nil {
@@ -100,20 +108,40 @@ func blockTransactionsToYamlExample() {
 		}
 	}
 
-	if err := os.Mkdir(dirPath, os.ModePerm); err != nil {
+	// Marshal bencodex value to JSON and write to file
+	if err := os.Mkdir(jsonDirPath, os.ModePerm); err != nil {
+		fmt.Println("Error creating directory:", err)
+		return
+	}
+	for i, serializedPayload := range serializedPayloadList {
+		out, err := util.MarshalJson(serializedPayload)
+		if err != nil {
+			fmt.Println("Error marshalling json data:", err)
+			return
+		}
+
+		err = os.WriteFile(fmt.Sprintf(jsonFilePath, i), out, 0644)
+		if err != nil {
+			fmt.Println("Error writing json data:", err)
+			return
+		}
+	}
+
+	// Marshal bencodex value to YAML and write to file
+	if err := os.Mkdir(yamlDirPath, os.ModePerm); err != nil {
 		fmt.Println("Error creating directory:", err)
 		return
 	}
 	for i, serializedPayload := range serializedPayloadList {
 		out, err := util.MarshalYaml(serializedPayload)
 		if err != nil {
-			fmt.Println("Error marshalling Bencodex yaml data:", err)
+			fmt.Println("Error marshalling yaml data:", err)
 			return
 		}
 
-		err = os.WriteFile(fmt.Sprintf(filePath, i), out, 0644)
+		err = os.WriteFile(fmt.Sprintf(yamlFilePath, i), out, 0644)
 		if err != nil {
-			fmt.Println("Error writing Bencodex yaml data:", err)
+			fmt.Println("Error writing yaml data:", err)
 			return
 		}
 	}

@@ -18,6 +18,7 @@ import (
 // Get response from https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer
 func blockTransactionsToJsonExample() {
 	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
+	const dirPath = "bencodex_json_datas"
 	const filePath = "bencodex_json_datas/bencodex_json_data_%d.json"
 	const filePathForGlob = "bencodex_json_datas/bencodex_json_data_*.json"
 
@@ -101,6 +102,10 @@ func blockTransactionsToJsonExample() {
 		}
 	}
 
+	if err := os.Mkdir(dirPath, os.ModePerm); err != nil {
+		fmt.Println("Error creating directory:", err)
+		return
+	}
 	for i, serializedPayload := range serializedPayloadList {
 		fmt.Printf("Serialized Payload %d\n:%v\n\n", i, serializedPayload)
 
