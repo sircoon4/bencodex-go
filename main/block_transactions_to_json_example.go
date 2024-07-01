@@ -109,7 +109,7 @@ func blockTransactionsToJsonExample() {
 	for i, serializedPayload := range serializedPayloadList {
 		fmt.Printf("Serialized Payload %d\n:%v\n\n", i, serializedPayload)
 
-		out, err := util.MarshalJson(serializedPayload)
+		out, err := util.MarshalJsonMap(serializedPayload)
 		if err != nil {
 			fmt.Println("Error marshalling JSON:", err)
 			return
@@ -141,12 +141,7 @@ func blockTransactionsToJsonExample() {
 			return
 		}
 
-		var preData map[string]any
-		err = json.Unmarshal(jsonData, &preData)
-		if err != nil {
-			fmt.Printf("Error unmarshalling JSON data: %v", err)
-		}
-		data, err := util.ParseBencodexJasonMapData(preData)
+		data, err := util.UnmarshalJsonMap(jsonData)
 		if err != nil {
 			fmt.Printf("Error parsing Bencodex map data: %v", err)
 		}

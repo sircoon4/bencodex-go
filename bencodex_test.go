@@ -1,7 +1,6 @@
 package bencodex
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,13 +42,7 @@ func TestBencodexEncode(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Decode the Json data
-			var preData map[string]any
-			err = json.Unmarshal(jsonData, &preData)
-			if err != nil {
-				t.Fatal(err)
-			}
-			data, err := util.ParseBencodexJasonMapData(preData)
+			data, err := util.UnmarshalJsonMap(jsonData)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -112,13 +105,7 @@ func TestBencodexDecode(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Decode the Json data
-			var preData map[string]any
-			err = json.Unmarshal(jsonData, &preData)
-			if err != nil {
-				t.Fatal(err)
-			}
-			result, err := util.ParseBencodexJasonMapData(preData)
+			result, err := util.UnmarshalJsonMap(jsonData)
 			if err != nil {
 				t.Fatal(err)
 			}

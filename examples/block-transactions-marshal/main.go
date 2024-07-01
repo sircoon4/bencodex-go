@@ -114,7 +114,7 @@ func main() {
 		return
 	}
 	for i, serializedPayload := range serializedPayloadList {
-		out, err := util.MarshalJson(serializedPayload)
+		out, err := util.MarshalJsonMap(serializedPayload)
 		if err != nil {
 			fmt.Println("Error marshalling json data:", err)
 			return

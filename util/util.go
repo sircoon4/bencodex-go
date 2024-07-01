@@ -13,7 +13,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func ParseBencodexJasonMapData(jsonMapData map[string]any) (any, error) {
+func UnmarshalJsonMap(jsonData []byte) (any, error) {
+	var jsonMapData map[string]any
+
+	err := json.Unmarshal(jsonData, &jsonMapData)
+	if err != nil {
+		return nil, err
+	}
+
+	return convertJsonMapDataToBencodexData(jsonMapData)
+}
+
+func convertJsonMapDataToBencodexData(jsonMapData map[string]any) (any, error) {
 	switch jsonMapData["type"] {
 	case "null":
 		return nil, nil
@@ -59,7 +70,7 @@ func ParseBencodexJasonMapData(jsonMapData map[string]any) (any, error) {
 		}
 		for _, preItem := range jsonMapData["values"].([]any) {
 			item := preItem.(map[string]any)
-			val, err := ParseBencodexJasonMapData(item)
+			val, err := convertJsonMapDataToBencodexData(item)
 			if err != nil {
 				return nil, err
 			}
@@ -77,13 +88,13 @@ func ParseBencodexJasonMapData(jsonMapData map[string]any) (any, error) {
 			if pair["key"] == nil || pair["value"] == nil {
 				return nil, fmt.Errorf("invalid map data")
 			}
-			keyData, err := ParseBencodexJasonMapData(pair["key"].(map[string]any))
+			keyData, err := convertJsonMapDataToBencodexData(pair["key"].(map[string]any))
 			if err != nil {
 				return nil, err
 			}
 			key := keyData
 
-			valData, err := ParseBencodexJasonMapData(pair["value"].(map[string]any))
+			valData, err := convertJsonMapDataToBencodexData(pair["value"].(map[string]any))
 			if err != nil {
 				return nil, err
 			}
@@ -95,7 +106,21 @@ func ParseBencodexJasonMapData(jsonMapData map[string]any) (any, error) {
 	}
 }
 
-func ConvertToBencodexJsonMapData(data any) (map[string]any, error) {
+func MarshalJsonMap(data any) ([]byte, error) {
+	jsonMapData, err := convertBencodexDataToJsonMapData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := json.MarshalIndent(jsonMapData, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func convertBencodexDataToJsonMapData(data any) (map[string]any, error) {
 	if data == nil {
 		return map[string]any{"type": "null"}, nil
 	}
@@ -118,7 +143,7 @@ func ConvertToBencodexJsonMapData(data any) (map[string]any, error) {
 
 		list := make([]map[string]any, 0)
 		for _, preItem := range data.([]any) {
-			item, err := ConvertToBencodexJsonMapData(preItem)
+			item, err := convertBencodexDataToJsonMapData(preItem)
 			if err != nil {
 				return nil, err
 			}
@@ -129,11 +154,11 @@ func ConvertToBencodexJsonMapData(data any) (map[string]any, error) {
 		dict := data.(map[string]any)
 		pairs := make([]map[string]any, 0)
 		for key, value := range dict {
-			keyData, err := ConvertToBencodexJsonMapData(key)
+			keyData, err := convertBencodexDataToJsonMapData(key)
 			if err != nil {
 				return nil, err
 			}
-			valData, err := ConvertToBencodexJsonMapData(value)
+			valData, err := convertBencodexDataToJsonMapData(value)
 			if err != nil {
 				return nil, err
 			}
@@ -146,11 +171,11 @@ func ConvertToBencodexJsonMapData(data any) (map[string]any, error) {
 			dict := val.Interface().(*bencodextype.Dictionary)
 			pairs := make([]map[string]any, 0)
 			for _, key := range dict.Keys() {
-				keyData, err := ConvertToBencodexJsonMapData(key)
+				keyData, err := convertBencodexDataToJsonMapData(key)
 				if err != nil {
 					return nil, err
 				}
-				valData, err := ConvertToBencodexJsonMapData(dict.Get(key))
+				valData, err := convertBencodexDataToJsonMapData(dict.Get(key))
 				if err != nil {
 					return nil, err
 				}
@@ -168,21 +193,7 @@ func ConvertToBencodexJsonMapData(data any) (map[string]any, error) {
 	}
 }
 
-func MarshalJson(data any) ([]byte, error) {
-	jsonMapData, err := ConvertToBencodexJsonMapData(data)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := json.MarshalIndent(jsonMapData, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func ParseYamlData(yamlData []byte) (any, error) {
+func UnmarshalYaml(yamlData []byte) (any, error) {
 	var yamlNode yaml.Node
 
 	err := yaml.Unmarshal(yamlData, &yamlNode)
@@ -192,7 +203,7 @@ func ParseYamlData(yamlData []byte) (any, error) {
 
 	if yamlNode.Kind == yaml.DocumentNode {
 		if len(yamlNode.Content) > 0 {
-			return ConvertYamlNodeToBencodexData(yamlNode.Content[0])
+			return convertYamlNodeToBencodexData(yamlNode.Content[0])
 		} else {
 			return nil, nil
 		}
@@ -201,7 +212,7 @@ func ParseYamlData(yamlData []byte) (any, error) {
 	return nil, fmt.Errorf("invalid yaml data")
 }
 
-func ConvertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
+func convertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
 	switch yamlNode.Kind {
 	case yaml.ScalarNode:
 		switch yamlNode.Tag {
@@ -236,7 +247,7 @@ func ConvertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
 	case yaml.SequenceNode:
 		list := make([]any, 0)
 		for _, preItem := range yamlNode.Content {
-			item, err := ConvertYamlNodeToBencodexData(preItem)
+			item, err := convertYamlNodeToBencodexData(preItem)
 			if err != nil {
 				return nil, err
 			}
@@ -246,11 +257,11 @@ func ConvertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
 	case yaml.MappingNode:
 		dict := bencodextype.NewDictionary()
 		for i := 0; i < len(yamlNode.Content); i += 2 {
-			key, err := ConvertYamlNodeToBencodexData(yamlNode.Content[i])
+			key, err := convertYamlNodeToBencodexData(yamlNode.Content[i])
 			if err != nil {
 				return nil, err
 			}
-			val, err := ConvertYamlNodeToBencodexData(yamlNode.Content[i+1])
+			val, err := convertYamlNodeToBencodexData(yamlNode.Content[i+1])
 			if err != nil {
 				return nil, err
 			}

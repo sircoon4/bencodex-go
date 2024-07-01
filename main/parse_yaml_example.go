@@ -27,7 +27,7 @@ func parseYamlExample() {
 			return
 		}
 
-		bencodexData, err := util.ParseYamlData(yamlData)
+		bencodexData, err := util.UnmarshalYaml(yamlData)
 		if err != nil {
 			fmt.Println("Error parsing yaml data:", err)
 			return
