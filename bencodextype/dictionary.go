@@ -135,7 +135,12 @@ func (d *Dictionary) String() string {
 			panic("dictionary contains invalid key")
 		}
 	}
-	str = str[:len(str)-2] + " }"
+	if len(*d) > 0 {
+		str = str[:len(str)-2] + " }"
+	} else {
+		str += "}"
+	}
+
 	return str
 }
 

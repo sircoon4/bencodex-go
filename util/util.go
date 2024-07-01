@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/planetarium/bencodex-go/bencodextype"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func ParseBencodexJasonMapData(jsonMapData map[string]any) (any, error) {
@@ -180,6 +180,86 @@ func MarshalJson(data any) ([]byte, error) {
 	}
 
 	return out, nil
+}
+
+func ParseYamlData(yamlData []byte) (any, error) {
+	var yamlNode yaml.Node
+
+	err := yaml.Unmarshal(yamlData, &yamlNode)
+	if err != nil {
+		return nil, err
+	}
+
+	if yamlNode.Kind == yaml.DocumentNode {
+		if len(yamlNode.Content) > 0 {
+			return ConvertYamlNodeToBencodexData(yamlNode.Content[0])
+		} else {
+			return nil, nil
+		}
+	}
+
+	return nil, fmt.Errorf("invalid yaml data")
+}
+
+func ConvertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
+	switch yamlNode.Kind {
+	case yaml.ScalarNode:
+		switch yamlNode.Tag {
+		case "!!null":
+			return nil, nil
+		case "!!bool":
+			return yamlNode.Value == "true", nil
+		case "!!int":
+			data, err := strconv.Atoi(yamlNode.Value)
+			if err != nil {
+				// If the value is too large to fit in an int, it is stored as a big.Int
+				bigInt := new(big.Int)
+				bigInt, ok := bigInt.SetString(yamlNode.Value, 10)
+				if !ok {
+					return nil, err
+				} else {
+					return bigInt, nil
+				}
+			}
+			return data, nil
+		case "!!str":
+			return yamlNode.Value, nil
+		case "!!binary":
+			data, err := base64.StdEncoding.DecodeString(yamlNode.Value)
+			if err != nil {
+				return nil, err
+			}
+			return data, nil
+		default:
+			return nil, fmt.Errorf("invalid yaml data")
+		}
+	case yaml.SequenceNode:
+		list := make([]any, 0)
+		for _, preItem := range yamlNode.Content {
+			item, err := ConvertYamlNodeToBencodexData(preItem)
+			if err != nil {
+				return nil, err
+			}
+			list = append(list, item)
+		}
+		return list, nil
+	case yaml.MappingNode:
+		dict := bencodextype.NewDictionary()
+		for i := 0; i < len(yamlNode.Content); i += 2 {
+			key, err := ConvertYamlNodeToBencodexData(yamlNode.Content[i])
+			if err != nil {
+				return nil, err
+			}
+			val, err := ConvertYamlNodeToBencodexData(yamlNode.Content[i+1])
+			if err != nil {
+				return nil, err
+			}
+			dict.Set(key, val)
+		}
+		return dict, nil
+	default:
+		return nil, fmt.Errorf("invalid yaml data")
+	}
 }
 
 func ConvertToBencodexYamlData(data any) (any, error) {
