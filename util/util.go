@@ -1,7 +1,6 @@
 package util
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -209,7 +208,7 @@ func UnmarshalYaml(yamlData []byte) (any, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("invalid yaml data")
+	return convertYamlNodeToBencodexData(&yamlNode)
 }
 
 func convertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
@@ -273,93 +272,93 @@ func convertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
 	}
 }
 
-func ConvertToBencodexYamlData(data any) (any, error) {
+func MarshalYaml(data any) ([]byte, error) {
+	yamlNode, err := convertBencodexDataToYamlNode(data)
+	if err != nil {
+		return nil, err
+	}
+
+	rootNode := &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{yamlNode}}
+
+	out, err := yaml.Marshal(rootNode)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func convertBencodexDataToYamlNode(data any) (*yaml.Node, error) {
 	if data == nil {
-		return nil, nil
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!null", Value: "null"}, nil
 	}
 
 	val := reflect.ValueOf(data)
 	switch val.Kind() {
 	case reflect.Bool:
-		return data.(bool), nil
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!bool", Value: fmt.Sprintf("%t", data.(bool))}, nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return val.Int(), nil
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!int", Value: fmt.Sprintf("%d", val.Int())}, nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return val.Uint(), nil
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!int", Value: fmt.Sprintf("%d", val.Uint())}, nil
 	case reflect.String:
-		return data.(string), nil
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: data.(string)}, nil
 	case reflect.Slice, reflect.Array:
 		// If the slice is a byte slice, encode it as a byte slice
 		if val.Type().Elem().Kind() == reflect.Uint8 {
-			return fmt.Sprintf("!!binary \"%s\"", base64.StdEncoding.EncodeToString(data.([]byte))), nil
+			return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!binary", Value: base64.StdEncoding.EncodeToString(data.([]byte))}, nil
 		}
 
-		list := make([]any, 0)
+		list := make([]*yaml.Node, 0)
 		for _, preItem := range data.([]any) {
-			item, err := ConvertToBencodexYamlData(preItem)
+			item, err := convertBencodexDataToYamlNode(preItem)
 			if err != nil {
 				return nil, err
 			}
 			list = append(list, item)
 		}
-		return list, nil
+		return &yaml.Node{Kind: yaml.SequenceNode, Content: list}, nil
 	case reflect.Map:
-		mapData := make([]map[string]any, 0)
-		for key, value := range data.(map[string]any) {
-			keyData, err := ConvertToBencodexYamlData(key)
+		dict := data.(map[string]any)
+		content := make([]*yaml.Node, 0)
+		for key, value := range dict {
+			keyNode, err := convertBencodexDataToYamlNode(key)
 			if err != nil {
 				return nil, err
 			}
-			valData, err := ConvertToBencodexYamlData(value)
+			valNode, err := convertBencodexDataToYamlNode(value)
 			if err != nil {
 				return nil, err
 			}
-			mapData = append(mapData, map[string]any{keyData.(string): valData})
+			content = append(content, keyNode, valNode)
 		}
-		return mapData, nil
+		return &yaml.Node{Kind: yaml.MappingNode, Content: content}, nil
 	case reflect.Pointer:
 		_, ok := val.Interface().(*bencodextype.Dictionary)
 		if ok {
 			dict := val.Interface().(*bencodextype.Dictionary)
-			mapData := make([]map[string]any, 0)
+			content := make([]*yaml.Node, 0)
 			for _, key := range dict.Keys() {
-				keyData, err := ConvertToBencodexYamlData(key)
+				keyNode, err := convertBencodexDataToYamlNode(key)
 				if err != nil {
 					return nil, err
 				}
-				valData, err := ConvertToBencodexYamlData(dict.Get(key))
+				valNode, err := convertBencodexDataToYamlNode(dict.Get(key))
 				if err != nil {
 					return nil, err
 				}
-				mapData = append(mapData, map[string]any{keyData.(string): valData})
+				content = append(content, keyNode, valNode)
 			}
-			return mapData, nil
+			return &yaml.Node{Kind: yaml.MappingNode, Content: content}, nil
 		}
 		_, ok = val.Interface().(*big.Int)
 		if ok {
-			return fmt.Sprintf("\"BencodexBigIntInspector\"%s", val.Interface().(*big.Int).String()), nil
+			return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!int", Value: val.Interface().(*big.Int).String()}, nil
 		}
-		return nil, fmt.Errorf("ConverToBencodexYamlData: unsupported type")
+		return nil, fmt.Errorf("convertToBencodexYamlData: unsupported type")
 	default:
-		return nil, fmt.Errorf("ConverToBencodexYamlData: unsupported type")
+		return nil, fmt.Errorf("convertToBencodexYamlData: unsupported type")
 	}
-}
-
-func MarshalYaml(data any) ([]byte, error) {
-	yamlData, err := ConvertToBencodexYamlData(data)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := yaml.Marshal(yamlData)
-	if err != nil {
-		return nil, err
-	}
-
-	out = bytes.ReplaceAll(out, []byte("'"), []byte(""))
-	out = bytes.ReplaceAll(out, []byte("\"BencodexBigIntInspector\""), []byte(""))
-
-	return out, nil
 }
 
 func BencodexValueEqual(decoded1 any, decoded2 any) bool {

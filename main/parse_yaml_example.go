@@ -18,7 +18,6 @@ func parseYamlExample() {
 	}
 
 	for _, file := range files {
-		fmt.Println()
 		fmt.Println("Test File:", file)
 
 		yamlData, err := os.ReadFile(file)
@@ -34,5 +33,23 @@ func parseYamlExample() {
 		}
 
 		fmt.Println("Bencodex Data:", bencodexData)
+
+		// Convert bencodex data to yaml
+		yamlData, err = util.MarshalYaml(bencodexData)
+		if err != nil {
+			fmt.Println("Error converting bencodex data to yaml:", err)
+			return
+		}
+		fmt.Println("Yaml Data:", string(yamlData))
+
+		bencodexData, err = util.UnmarshalYaml(yamlData)
+		if err != nil {
+			fmt.Println("Error parsing yaml data:", err)
+			return
+		}
+
+		fmt.Println("Bencodex Data:", bencodexData)
+
+		fmt.Println()
 	}
 }

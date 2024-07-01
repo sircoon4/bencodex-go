@@ -102,7 +102,7 @@ func blockTransactionsToJsonExample() {
 		}
 	}
 
-	if err := os.Mkdir(dirPath, os.ModePerm); err != nil {
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
 		fmt.Println("Error creating directory:", err)
 		return
 	}

@@ -100,7 +100,7 @@ func blockTransactionsToYamlExample() {
 		}
 	}
 
-	if err := os.Mkdir(dirPath, os.ModePerm); err != nil {
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
 		fmt.Println("Error creating directory:", err)
 		return
 	}
@@ -115,6 +115,42 @@ func blockTransactionsToYamlExample() {
 		if err != nil {
 			fmt.Println("Error writing Bencodex yaml data:", err)
 			return
+		}
+	}
+
+	files, err = filepath.Glob(filePathForGlob)
+	if err != nil {
+		fmt.Println("Error getting files:", err)
+		return
+	}
+	for _, file := range files {
+		i := 0
+		_, err := fmt.Sscanf(file, filePath, &i)
+		if err != nil {
+			fmt.Println("Error extracting number from file name:", err)
+			return
+		}
+
+		yamlData, err := os.ReadFile(file)
+		if err != nil {
+			fmt.Println("Error reading file:", err)
+			return
+		}
+
+		data, err := util.UnmarshalYaml(yamlData)
+		if err != nil {
+			fmt.Printf("Error parsing Bencodex map data: %v", err)
+		}
+
+		// Encode the data
+		encoded, err := bencodex.Encode(data)
+		if err != nil {
+			fmt.Println("Error encoding data:", err)
+		}
+
+		serializedPayloadEncoded := serializedPayloadEncodedList[i]
+		if !bytes.Equal(encoded, serializedPayloadEncoded) {
+			fmt.Println("Encoded data does not match serialized payload")
 		}
 	}
 }

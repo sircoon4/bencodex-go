@@ -7,7 +7,7 @@ func main() {
 
 	//blockTransactionsToJsonExample()
 
-	//blockTransactionsToYamlExample()
+	blockTransactionsToYamlExample()
 
-	parseYamlExample()
+	//parseYamlExample()
 }
