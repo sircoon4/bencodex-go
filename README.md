@@ -38,10 +38,12 @@ But you can use the `map[string]any` type for `bencodex.Encode` as well as the `
 
 It provides fundamental marshaling to Json and Yaml data
 
-- `func util.MarshalJson(data any) ([]byte, error)`
+- `func util.MarshalJsonMap(data any) ([]byte, error)`
+- `func util.UnmarshalJsonMap(jsonData []byte]) (any, error)`
 - `func util.MarshalYaml(data any) ([]byte, error)`
+- `func util.UnmarshalYaml(yamlData []byte) (any, error)`
 
-Json data format looks like [this]
+Json map data format looks like [this]
 
 [this]: https://github.com/planetarium/bencodex/blob/main/testsuite/mixed-dict.json
 

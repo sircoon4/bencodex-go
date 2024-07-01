@@ -12,6 +12,93 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func MarshalJsonMap(data any) ([]byte, error) {
+	jsonMapData, err := convertBencodexDataToJsonMapData(data)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := json.MarshalIndent(jsonMapData, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func convertBencodexDataToJsonMapData(data any) (map[string]any, error) {
+	if data == nil {
+		return map[string]any{"type": "null"}, nil
+	}
+
+	val := reflect.ValueOf(data)
+	switch val.Kind() {
+	case reflect.Bool:
+		return map[string]any{"type": "boolean", "value": data.(bool)}, nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return map[string]any{"type": "integer", "decimal": strconv.FormatInt(val.Int(), 10)}, nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return map[string]any{"type": "integer", "decimal": strconv.FormatUint(val.Uint(), 10)}, nil
+	case reflect.String:
+		return map[string]any{"type": "text", "value": data.(string)}, nil
+	case reflect.Slice, reflect.Array:
+		// If the slice is a byte slice, encode it as a byte slice
+		if val.Type().Elem().Kind() == reflect.Uint8 {
+			return map[string]any{"type": "binary", "base64": base64.StdEncoding.EncodeToString(data.([]byte))}, nil
+		}
+
+		list := make([]map[string]any, 0)
+		for _, preItem := range data.([]any) {
+			item, err := convertBencodexDataToJsonMapData(preItem)
+			if err != nil {
+				return nil, err
+			}
+			list = append(list, item)
+		}
+		return map[string]any{"type": "list", "values": list}, nil
+	case reflect.Map:
+		dict := data.(map[string]any)
+		pairs := make([]map[string]any, 0)
+		for key, value := range dict {
+			keyData, err := convertBencodexDataToJsonMapData(key)
+			if err != nil {
+				return nil, err
+			}
+			valData, err := convertBencodexDataToJsonMapData(value)
+			if err != nil {
+				return nil, err
+			}
+			pairs = append(pairs, map[string]any{"key": keyData, "value": valData})
+		}
+		return map[string]any{"type": "dictionary", "pairs": pairs}, nil
+	case reflect.Pointer:
+		_, ok := val.Interface().(*bencodextype.Dictionary)
+		if ok {
+			dict := val.Interface().(*bencodextype.Dictionary)
+			pairs := make([]map[string]any, 0)
+			for _, key := range dict.Keys() {
+				keyData, err := convertBencodexDataToJsonMapData(key)
+				if err != nil {
+					return nil, err
+				}
+				valData, err := convertBencodexDataToJsonMapData(dict.Get(key))
+				if err != nil {
+					return nil, err
+				}
+				pairs = append(pairs, map[string]any{"key": keyData, "value": valData})
+			}
+			return map[string]any{"type": "dictionary", "pairs": pairs}, nil
+		}
+		_, ok = val.Interface().(*big.Int)
+		if ok {
+			return map[string]any{"type": "integer", "decimal": val.Interface().(*big.Int).String()}, nil
+		}
+		return nil, fmt.Errorf("ConvertToBencodexJsonMapData: unsupported type")
+	default:
+		return nil, fmt.Errorf("ConvertToBencodexJsonMapData: unsupported type")
+	}
+}
+
 func UnmarshalJsonMap(jsonData []byte) (any, error) {
 	var jsonMapData map[string]any
 
@@ -105,173 +192,6 @@ func convertJsonMapDataToBencodexData(jsonMapData map[string]any) (any, error) {
 	}
 }
 
-func MarshalJsonMap(data any) ([]byte, error) {
-	jsonMapData, err := convertBencodexDataToJsonMapData(data)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := json.MarshalIndent(jsonMapData, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func convertBencodexDataToJsonMapData(data any) (map[string]any, error) {
-	if data == nil {
-		return map[string]any{"type": "null"}, nil
-	}
-
-	val := reflect.ValueOf(data)
-	switch val.Kind() {
-	case reflect.Bool:
-		return map[string]any{"type": "boolean", "value": data.(bool)}, nil
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return map[string]any{"type": "integer", "decimal": strconv.FormatInt(val.Int(), 10)}, nil
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return map[string]any{"type": "integer", "decimal": strconv.FormatUint(val.Uint(), 10)}, nil
-	case reflect.String:
-		return map[string]any{"type": "text", "value": data.(string)}, nil
-	case reflect.Slice, reflect.Array:
-		// If the slice is a byte slice, encode it as a byte slice
-		if val.Type().Elem().Kind() == reflect.Uint8 {
-			return map[string]any{"type": "binary", "base64": base64.StdEncoding.EncodeToString(data.([]byte))}, nil
-		}
-
-		list := make([]map[string]any, 0)
-		for _, preItem := range data.([]any) {
-			item, err := convertBencodexDataToJsonMapData(preItem)
-			if err != nil {
-				return nil, err
-			}
-			list = append(list, item)
-		}
-		return map[string]any{"type": "list", "values": list}, nil
-	case reflect.Map:
-		dict := data.(map[string]any)
-		pairs := make([]map[string]any, 0)
-		for key, value := range dict {
-			keyData, err := convertBencodexDataToJsonMapData(key)
-			if err != nil {
-				return nil, err
-			}
-			valData, err := convertBencodexDataToJsonMapData(value)
-			if err != nil {
-				return nil, err
-			}
-			pairs = append(pairs, map[string]any{"key": keyData, "value": valData})
-		}
-		return map[string]any{"type": "dictionary", "pairs": pairs}, nil
-	case reflect.Pointer:
-		_, ok := val.Interface().(*bencodextype.Dictionary)
-		if ok {
-			dict := val.Interface().(*bencodextype.Dictionary)
-			pairs := make([]map[string]any, 0)
-			for _, key := range dict.Keys() {
-				keyData, err := convertBencodexDataToJsonMapData(key)
-				if err != nil {
-					return nil, err
-				}
-				valData, err := convertBencodexDataToJsonMapData(dict.Get(key))
-				if err != nil {
-					return nil, err
-				}
-				pairs = append(pairs, map[string]any{"key": keyData, "value": valData})
-			}
-			return map[string]any{"type": "dictionary", "pairs": pairs}, nil
-		}
-		_, ok = val.Interface().(*big.Int)
-		if ok {
-			return map[string]any{"type": "integer", "decimal": val.Interface().(*big.Int).String()}, nil
-		}
-		return nil, fmt.Errorf("ConvertToBencodexJsonMapData: unsupported type")
-	default:
-		return nil, fmt.Errorf("ConvertToBencodexJsonMapData: unsupported type")
-	}
-}
-
-func UnmarshalYaml(yamlData []byte) (any, error) {
-	var yamlNode yaml.Node
-
-	err := yaml.Unmarshal(yamlData, &yamlNode)
-	if err != nil {
-		return nil, err
-	}
-
-	if yamlNode.Kind == yaml.DocumentNode {
-		if len(yamlNode.Content) > 0 {
-			return convertYamlNodeToBencodexData(yamlNode.Content[0])
-		} else {
-			return nil, nil
-		}
-	}
-
-	return convertYamlNodeToBencodexData(&yamlNode)
-}
-
-func convertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
-	switch yamlNode.Kind {
-	case yaml.ScalarNode:
-		switch yamlNode.Tag {
-		case "!!null":
-			return nil, nil
-		case "!!bool":
-			return yamlNode.Value == "true", nil
-		case "!!int":
-			data, err := strconv.Atoi(yamlNode.Value)
-			if err != nil {
-				// If the value is too large to fit in an int, it is stored as a big.Int
-				bigInt := new(big.Int)
-				bigInt, ok := bigInt.SetString(yamlNode.Value, 10)
-				if !ok {
-					return nil, err
-				} else {
-					return bigInt, nil
-				}
-			}
-			return data, nil
-		case "!!str":
-			return yamlNode.Value, nil
-		case "!!binary":
-			data, err := base64.StdEncoding.DecodeString(yamlNode.Value)
-			if err != nil {
-				return nil, err
-			}
-			return data, nil
-		default:
-			return nil, fmt.Errorf("invalid yaml data")
-		}
-	case yaml.SequenceNode:
-		list := make([]any, 0)
-		for _, preItem := range yamlNode.Content {
-			item, err := convertYamlNodeToBencodexData(preItem)
-			if err != nil {
-				return nil, err
-			}
-			list = append(list, item)
-		}
-		return list, nil
-	case yaml.MappingNode:
-		dict := bencodextype.NewDictionary()
-		for i := 0; i < len(yamlNode.Content); i += 2 {
-			key, err := convertYamlNodeToBencodexData(yamlNode.Content[i])
-			if err != nil {
-				return nil, err
-			}
-			val, err := convertYamlNodeToBencodexData(yamlNode.Content[i+1])
-			if err != nil {
-				return nil, err
-			}
-			dict.Set(key, val)
-		}
-		return dict, nil
-	default:
-		return nil, fmt.Errorf("invalid yaml data")
-	}
-}
-
 func MarshalYaml(data any) ([]byte, error) {
 	yamlNode, err := convertBencodexDataToYamlNode(data)
 	if err != nil {
@@ -358,6 +278,86 @@ func convertBencodexDataToYamlNode(data any) (*yaml.Node, error) {
 		return nil, fmt.Errorf("convertToBencodexYamlData: unsupported type")
 	default:
 		return nil, fmt.Errorf("convertToBencodexYamlData: unsupported type")
+	}
+}
+
+func UnmarshalYaml(yamlData []byte) (any, error) {
+	var yamlNode yaml.Node
+
+	err := yaml.Unmarshal(yamlData, &yamlNode)
+	if err != nil {
+		return nil, err
+	}
+
+	if yamlNode.Kind == yaml.DocumentNode {
+		if len(yamlNode.Content) > 0 {
+			return convertYamlNodeToBencodexData(yamlNode.Content[0])
+		} else {
+			return nil, nil
+		}
+	}
+
+	return convertYamlNodeToBencodexData(&yamlNode)
+}
+
+func convertYamlNodeToBencodexData(yamlNode *yaml.Node) (any, error) {
+	switch yamlNode.Kind {
+	case yaml.ScalarNode:
+		switch yamlNode.Tag {
+		case "!!null":
+			return nil, nil
+		case "!!bool":
+			return yamlNode.Value == "true", nil
+		case "!!int":
+			data, err := strconv.Atoi(yamlNode.Value)
+			if err != nil {
+				// If the value is too large to fit in an int, it is stored as a big.Int
+				bigInt := new(big.Int)
+				bigInt, ok := bigInt.SetString(yamlNode.Value, 10)
+				if !ok {
+					return nil, err
+				} else {
+					return bigInt, nil
+				}
+			}
+			return data, nil
+		case "!!str":
+			return yamlNode.Value, nil
+		case "!!binary":
+			data, err := base64.StdEncoding.DecodeString(yamlNode.Value)
+			if err != nil {
+				return nil, err
+			}
+			return data, nil
+		default:
+			return nil, fmt.Errorf("invalid yaml data")
+		}
+	case yaml.SequenceNode:
+		list := make([]any, 0)
+		for _, preItem := range yamlNode.Content {
+			item, err := convertYamlNodeToBencodexData(preItem)
+			if err != nil {
+				return nil, err
+			}
+			list = append(list, item)
+		}
+		return list, nil
+	case yaml.MappingNode:
+		dict := bencodextype.NewDictionary()
+		for i := 0; i < len(yamlNode.Content); i += 2 {
+			key, err := convertYamlNodeToBencodexData(yamlNode.Content[i])
+			if err != nil {
+				return nil, err
+			}
+			val, err := convertYamlNodeToBencodexData(yamlNode.Content[i+1])
+			if err != nil {
+				return nil, err
+			}
+			dict.Set(key, val)
+		}
+		return dict, nil
+	default:
+		return nil, fmt.Errorf("invalid yaml data")
 	}
 }
 
