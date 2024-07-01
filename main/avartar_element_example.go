@@ -15,7 +15,7 @@ func avartarElementExample() {
 	}
 	rv, err := bencodex.Decode(b)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("avartarElementExample: ", err)
 	} else {
 		fmt.Printf("value: %s\n type: %T\n", rv, rv)
 		fmt.Println()

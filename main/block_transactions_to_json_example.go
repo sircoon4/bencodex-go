@@ -107,7 +107,6 @@ func blockTransactionsToJsonExample() {
 		return
 	}
 	for i, serializedPayload := range serializedPayloadList {
-		fmt.Printf("Serialized Payload %d\n:%v\n\n", i, serializedPayload)
 
 		out, err := util.MarshalJsonMap(serializedPayload)
 		if err != nil {

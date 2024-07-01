@@ -5,7 +5,7 @@ func main() {
 
 	//serializedpayloadElementExample()
 
-	//blockTransactionsToJsonExample()
+	blockTransactionsToJsonExample()
 
 	blockTransactionsToYamlExample()
 
