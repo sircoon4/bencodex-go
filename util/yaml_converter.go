@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/planetarium/bencodex-go/bencodextype"
+	"github.com/sircoon4/bencodex-go/bencodextype"
 	"gopkg.in/yaml.v3"
 )
 

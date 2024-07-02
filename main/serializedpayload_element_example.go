@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/planetarium/bencodex-go"
+	"github.com/sircoon4/bencodex-go"
 )
 
 // SerializedPayload Element Example

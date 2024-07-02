@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/planetarium/bencodex-go/bencodextype"
+	"github.com/sircoon4/bencodex-go/bencodextype"
 )
 
 // remove slice2 from slice1

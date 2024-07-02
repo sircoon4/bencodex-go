@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/planetarium/bencodex-go/util"
+	"github.com/sircoon4/bencodex-go/util"
 )
 
 func parseYamlExample() {

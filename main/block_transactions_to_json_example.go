@@ -10,8 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/planetarium/bencodex-go"
-	"github.com/planetarium/bencodex-go/util"
+	"github.com/sircoon4/bencodex-go"
+	"github.com/sircoon4/bencodex-go/util"
 )
 
 // Parse the serialized payload of a block transaction from the GraphQL query response

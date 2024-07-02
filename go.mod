@@ -1,4 +1,4 @@
-module github.com/planetarium/bencodex-go
+module github.com/sircoon4/bencodex-go
 
 go 1.22.4
 

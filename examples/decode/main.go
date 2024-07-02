@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/planetarium/bencodex-go"
+	"github.com/sircoon4/bencodex-go"
 )
 
 func main() {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/planetarium/bencodex-go"
-	"github.com/planetarium/bencodex-go/bencodextype"
+	"github.com/sircoon4/bencodex-go"
+	"github.com/sircoon4/bencodex-go/bencodextype"
 )
 
 func main() {

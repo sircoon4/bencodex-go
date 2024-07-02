@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"reflect"
 
-	"github.com/planetarium/bencodex-go/bencodextype"
+	"github.com/sircoon4/bencodex-go/bencodextype"
 )
 
 func BencodexValueEqual(decoded1 any, decoded2 any) bool {

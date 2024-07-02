@@ -5,8 +5,8 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/planetarium/bencodex-go/internal/decode"
-	"github.com/planetarium/bencodex-go/internal/encode"
+	"github.com/sircoon4/bencodex-go/internal/decode"
+	"github.com/sircoon4/bencodex-go/internal/encode"
 )
 
 func Encode(val any) ([]byte, error) {
