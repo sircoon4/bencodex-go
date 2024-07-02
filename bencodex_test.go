@@ -11,20 +11,13 @@ import (
 )
 
 const encodedDataFilesPath = "spec/testsuite/*.dat"
-const decodedDataFilesPath = "spec/testsuite/*.json"
-const excludedDataFilesPath = "spec/testsuite/*.repr.json"
+const decodedDataFilesPath = "spec/testsuite/*.repr.json"
 
 func TestBencodexEncode(t *testing.T) {
 	testFiles, err := filepath.Glob(decodedDataFilesPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	excluededFiles, err := filepath.Glob(excludedDataFilesPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Exclude the files that are not for encoding
-	testFiles = difference(testFiles, excluededFiles)
 
 	testResults, err := filepath.Glob(encodedDataFilesPath)
 	if err != nil {
@@ -42,7 +35,7 @@ func TestBencodexEncode(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			data, err := util.UnmarshalJsonMap(jsonData)
+			data, err := util.UnmarshalJsonRepr(jsonData)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -75,12 +68,6 @@ func TestBencodexDecode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	excluededResultFiles, err := filepath.Glob(excludedDataFilesPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Exclude the files that are not for decoding results
-	testResults := difference(testResultFiles, excluededResultFiles)
 
 	for i, file := range testFiles {
 		t.Run(filepath.Base(file), func(t *testing.T) {
@@ -100,12 +87,12 @@ func TestBencodexDecode(t *testing.T) {
 			}
 
 			// Read the test file
-			jsonData, err := os.ReadFile(testResults[i])
+			jsonData, err := os.ReadFile(testResultFiles[i])
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			result, err := util.UnmarshalJsonMap(jsonData)
+			result, err := util.UnmarshalJsonRepr(jsonData)
 			if err != nil {
 				t.Fatal(err)
 			}

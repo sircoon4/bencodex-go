@@ -8,27 +8,6 @@ import (
 	"github.com/sircoon4/bencodex-go/bencodextype"
 )
 
-// remove slice2 from slice1
-func difference(slice1 []string, slice2 []string) []string {
-	var diff []string
-
-	for _, s1 := range slice1 {
-		found := false
-		for _, s2 := range slice2 {
-			if s1 == s2 {
-				found = true
-				break
-			}
-		}
-		// if string is not foundec, add it to return slice
-		if !found {
-			diff = append(diff, s1)
-		}
-	}
-
-	return diff
-}
-
 // customizedAssertEqual is a function that compares the real values of the result and decoded data.
 func customizedAssertEqual(t *testing.T, result any, decoded any) {
 	// If the decoded data is a dictionary type, compare the values of the result and decoded data.
