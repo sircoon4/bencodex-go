@@ -40,12 +40,13 @@ It provides fundamental marshaling to Json and Yaml data
 
 - `func util.MarshalJsonMap(data any) ([]byte, error)`
 - `func util.UnmarshalJsonMap(jsonData []byte]) (any, error)`
+- `func util.MarshalJsonRepr(data any) ([]byte, error)`
+- `func util.UnmarshalJsonRepr(jsonData []byte]) (any, error)`
 - `func util.MarshalYaml(data any) ([]byte, error)`
 - `func util.UnmarshalYaml(yamlData []byte) (any, error)`
 
-Json map data format looks like [this]
-
-[this]: https://github.com/planetarium/bencodex/blob/main/testsuite/mixed-dict.json
+Json map data format looks like [this](https://github.com/planetarium/bencodex/blob/main/testsuite/mixed-dict.json)</br>
+Json repr data format looks like [this](https://github.com/planetarium/bencodex/blob/main/testsuite/mixed-dict.repr.json)
 
 Example
 -------
