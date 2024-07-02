@@ -10,17 +10,24 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
 	"github.com/sircoon4/bencodex-go"
 	"github.com/sircoon4/bencodex-go/util"
 )
 
 // Parse the serialized payload of a block transaction from the GraphQL query response
-// Get response from https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer
 func blockTransactionsToJsonReprExample() {
-	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
 	const dirPath = "bencodex_json_repr_datas"
 	const filePath = "bencodex_json_repr_datas/bencodex_json_repr_data_%d.repr.json"
 	const filePathForGlob = "bencodex_json_repr_datas/bencodex_json_repr_data_*.repr.json"
+
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file:", err)
+		return
+	}
+
+	path9c := os.Getenv("9C_GRAPHQL_EXPLORER_API_URL")
 
 	// Make GraphQL query request
 	query := `{
