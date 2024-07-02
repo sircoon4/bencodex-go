@@ -14,11 +14,13 @@ import (
 	"github.com/sircoon4/bencodex-go/util"
 )
 
-func blockTransactionsToYamlExample() {
+// Parse the serialized payload of a block transaction from the GraphQL query response
+// Get response from https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer
+func blockTransactionsToJsonReprExample() {
 	const path9c = "https://9c-main-rpc-1.nine-chronicles.com/graphql/explorer"
-	const dirPath = "bencodex_yaml_datas"
-	const filePath = "bencodex_yaml_datas/bencodex_yaml_data_%d.yaml"
-	const filePathForGlob = "bencodex_yaml_datas/bencodex_yaml_data_*.yaml"
+	const dirPath = "bencodex_json_repr_datas"
+	const filePath = "bencodex_json_repr_datas/bencodex_json_repr_data_%d.repr.json"
+	const filePathForGlob = "bencodex_json_repr_datas/bencodex_json_repr_data_*.repr.json"
 
 	// Make GraphQL query request
 	query := `{
@@ -63,10 +65,6 @@ func blockTransactionsToYamlExample() {
 		return
 	}
 
-	// Print the response body
-	fmt.Printf("%#v\n", response)
-	fmt.Println()
-
 	var serializedPayloadEncodedList [][]byte
 	for _, transaction := range response.Data.BlockQuery.Blocks[0].Transactions {
 		serializedPayloadEncoded, err := base64.StdEncoding.DecodeString(transaction.SerializedPayload)
@@ -105,15 +103,16 @@ func blockTransactionsToYamlExample() {
 		return
 	}
 	for i, serializedPayload := range serializedPayloadList {
-		out, err := util.MarshalYaml(serializedPayload)
+
+		out, err := util.MarshalJsonRepr(serializedPayload)
 		if err != nil {
-			fmt.Println("Error marshalling Bencodex yaml data:", err)
+			fmt.Println("Error marshalling JSON:", err)
 			return
 		}
 
 		err = os.WriteFile(fmt.Sprintf(filePath, i), out, 0644)
 		if err != nil {
-			fmt.Println("Error writing Bencodex yaml data:", err)
+			fmt.Println("Error writing Bencodex json data:", err)
 			return
 		}
 	}
@@ -131,13 +130,13 @@ func blockTransactionsToYamlExample() {
 			return
 		}
 
-		yamlData, err := os.ReadFile(file)
+		jsonData, err := os.ReadFile(file)
 		if err != nil {
 			fmt.Println("Error reading file:", err)
 			return
 		}
 
-		data, err := util.UnmarshalYaml(yamlData)
+		data, err := util.UnmarshalJsonRepr(jsonData)
 		if err != nil {
 			fmt.Printf("Error parsing Bencodex map data: %v", err)
 		}
