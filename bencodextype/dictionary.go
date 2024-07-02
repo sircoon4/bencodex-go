@@ -128,9 +128,9 @@ func (d *Dictionary) String() string {
 	for key, value := range *d {
 		switch key[:2] {
 		case "s:":
-			str += fmt.Sprintf("%s: %v, ", key, value)
+			str += fmt.Sprintf("%s: %v, ", key[2:], value)
 		case "b:":
-			str += fmt.Sprintf("d:base64(%s): %v, ", base64.StdEncoding.EncodeToString([]byte(key[2:])), value)
+			str += fmt.Sprintf("base64(%s): %v, ", base64.StdEncoding.EncodeToString([]byte(key[2:])), value)
 		default:
 			panic("dictionary contains invalid key")
 		}
