@@ -4,3 +4,4 @@
 !examples/block-transactions-marshal/
 examples/block-transactions-marshal/*
 !examples/block-transactions-marshal/*.go
+!examples/block-transactions-marshal/.env

@@ -17,14 +17,14 @@ import (
 
 // Parse the serialized payload of a block transaction from the GraphQL query response
 func blockTransactionsToJsonMapExample() {
-	const dirPath = "bencodex_json_repr_datas"
-	const filePath = "bencodex_json_repr_datas/bencodex_json_repr_data_%d.repr.json"
-	const filePathForGlob = "bencodex_json_repr_datas/bencodex_json_repr_data_*.repr.json"
+	const dirPath = "bencodex_json_map_datas"
+	const filePath = "bencodex_json_map_datas/bencodex_json_map_data_%d.json"
+	const filePathForGlob = "bencodex_json_map_datas/bencodex_json_map_data_*.json"
 
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file:", err)
-		return
+		//return
 	}
 
 	path9c := os.Getenv("9C_GRAPHQL_EXPLORER_API_URL")
