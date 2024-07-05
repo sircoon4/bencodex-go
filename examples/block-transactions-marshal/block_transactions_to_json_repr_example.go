@@ -20,6 +20,9 @@ func blockTransactionsToJsonReprExample() {
 	const dirPath = "bencodex_json_repr_datas"
 	const filePath = "bencodex_json_repr_datas/bencodex_json_repr_data_%d.repr.json"
 	const filePathForGlob = "bencodex_json_repr_datas/bencodex_json_repr_data_*.repr.json"
+	const payloadDirPath = "bencodex_payloads"
+	const payloadFilePath = "bencodex_payloads/bencodex_payload_%d.dat"
+	const payloadFilePathForGlob = "bencodex_payloads/bencodex_payload_*.dat"
 
 	err := godotenv.Load()
 	if err != nil {
@@ -72,8 +75,31 @@ func blockTransactionsToJsonReprExample() {
 		return
 	}
 
+	files, err := filepath.Glob(payloadFilePathForGlob)
+	if err != nil {
+		fmt.Println("Error getting files:", err)
+		return
+	}
+	for _, file := range files {
+		err := os.Remove(file)
+		if err != nil {
+			fmt.Println("Error deleting file:", err)
+			return
+		}
+	}
+	if err := os.MkdirAll(payloadDirPath, os.ModePerm); err != nil {
+		fmt.Println("Error creating directory:", err)
+		return
+	}
+
 	var serializedPayloadEncodedList [][]byte
-	for _, transaction := range response.Data.BlockQuery.Blocks[0].Transactions {
+	for i, transaction := range response.Data.BlockQuery.Blocks[0].Transactions {
+		err = os.WriteFile(fmt.Sprintf(payloadFilePath, i), []byte(transaction.SerializedPayload), 0644)
+		if err != nil {
+			fmt.Println("Error writing serializedPayload data:", err)
+			return
+		}
+
 		serializedPayloadEncoded, err := base64.StdEncoding.DecodeString(transaction.SerializedPayload)
 		if err != nil {
 			fmt.Println("Error decoding serialized payload:", err)
@@ -92,7 +118,7 @@ func blockTransactionsToJsonReprExample() {
 		serializedPayloadList = append(serializedPayloadList, value)
 	}
 
-	files, err := filepath.Glob(filePathForGlob)
+	files, err = filepath.Glob(filePathForGlob)
 	if err != nil {
 		fmt.Println("Error getting files:", err)
 		return
