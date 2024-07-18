@@ -18,14 +18,7 @@ func (e *UnsupportedTypeError) Error() string {
 
 // check if the reflect.Value wraps nil value
 func isNil(val reflect.Value) bool {
-	if !val.IsValid() {
-		return true
-	}
-	switch val.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
-		return val.IsNil()
-	}
-	return false
+	return !val.IsValid()
 }
 
 // Unicode strings do not appear earlier than byte strings.

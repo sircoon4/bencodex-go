@@ -102,3 +102,57 @@ func TestBencodexDecode(t *testing.T) {
 		})
 	}
 }
+
+func TestNilString(t *testing.T) {
+	var encodedE, encodedA []byte
+	var decoded any
+	var err error
+
+	encodedE = []byte("u0:")
+	decoded, err = Decode(encodedE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	encodedA, err = Encode(decoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, encodedE, encodedA)
+}
+
+func TestNilList(t *testing.T) {
+	var encodedE, encodedA []byte
+	var decoded any
+	var err error
+
+	encodedE = []byte("le")
+	decoded, err = Decode(encodedE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	encodedA, err = Encode(decoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, encodedE, encodedA)
+}
+
+func TestNilDictionary(t *testing.T) {
+	var encodedE, encodedA []byte
+	var decoded any
+	var err error
+
+	encodedE = []byte("de")
+	decoded, err = Decode(encodedE)
+	if err != nil {
+		t.Fatal(err)
+	}
+	encodedA, err = Encode(decoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, encodedE, encodedA)
+}
